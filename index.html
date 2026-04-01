@@ -91,18 +91,42 @@
 						</div>
 					</div>
 					<div class="card box-color">
-						<div class="name-box">
-							<span class="display-name">JustNull</span>
-							<button
-								class="id username"
-								id="textToCopy"
-								aria-label="Click to copy!"
-								onclick="copyToClipboard()">kasugatowa</button>
-							<span class="pronouns">Kasuga Towa | Tuấn Anh</span>
-							<!-- <div class="custom-status">
-								<img id="custom-status-emoji" />
-								<p class="custom-status-text"></p>
-							</div> -->
+						<div class="header-section">
+							<div class="name-box">
+								<span class="display-name">JustNull</span>
+								<button
+									class="id username"
+									id="textToCopy"
+									aria-label="Click to copy!"
+									onclick="copyToClipboard()">kasugatowa</button>
+								<span class="pronouns">Kasuga Towa | Tuấn Anh</span>
+							</div>
+							<div class="music-player">
+								<div class="music-cover" id="music-cover"></div>
+								<div class="music-info">
+									<div class="music-title" id="music-title">Loading...</div>
+									<div class="music-artist" id="music-artist">-</div>
+								</div>
+								<div class="music-controls">
+									<i id="music-prev" class="fas fa-backward"></i>
+									<i id="music-play" class="fas fa-play"></i>
+									<i id="music-next" class="fas fa-forward"></i>
+								</div>
+								<div class="music-progress">
+									<div class="music-progress-bar" id="music-progress-bar">
+										<div class="music-progress-fill" id="music-progress-fill"></div>
+									</div>
+									<div class="music-time">
+										<span id="music-current-time">0:00</span>
+										<span id="music-duration">0:00</span>
+									</div>
+								</div>
+								<div class="music-volume">
+									<i class="fas fa-volume-down"></i>
+									<input type="range" id="music-volume-slider" min="0" max="1" step="0.1" value="0.5">
+									<i class="fas fa-volume-up"></i>
+								</div>
+							</div>
 						</div>
 						<div class="body">
 							<div class="content">
@@ -254,5 +278,6 @@
 		</div>
 		<script async src="./scripts/script.js"></script>
 		<script defer src="./scripts/sub.js"></script>
+		<script src="./scripts/music.js"></script>
 	</body>
 </html>
