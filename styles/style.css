@@ -653,6 +653,14 @@ a:hover.tooltip::after {
     background-blend-mode: darken
   }
 
+  .music-playlist {
+    bottom: 12px;
+    right: 12px;
+    left: 12px;
+    width: auto;
+    max-width: none;
+  }
+
   .profile {
     width: 300px
   }
@@ -797,6 +805,51 @@ a:hover.tooltip::after {
   font-size: 18px;
 }
 
+.music-controls #music-repeat-one {
+  position: relative;
+  margin-left: 4px;
+  font-size: 15px;
+  color: var(--text-color);
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.music-controls #music-repeat-one:hover {
+  color: #00aff4;
+  transform: scale(1.1);
+}
+
+.music-controls #music-repeat-one.active {
+  color: #00aff4;
+}
+
+.music-controls #music-repeat-one.active::after {
+  content: "1";
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  font-size: 9px;
+  font-weight: 700;
+  font-style: normal;
+  font-family: var(--font, sans-serif);
+  line-height: 1;
+  color: #00aff4;
+}
+
+.music-controls #music-playlist-toggle {
+  position: relative;
+  margin-left: 4px;
+  color: var(--text-color);
+  transition: color 0.2s ease;
+}
+
+.music-controls #music-playlist-toggle:hover {
+  color: #00aff4;
+}
+
+.music-controls #music-playlist-toggle.active {
+  color: #00aff4;
+}
+
 .music-progress {
   display: flex;
   flex-direction: column;
@@ -867,4 +920,113 @@ a:hover.tooltip::after {
   border-radius: 50%;
   cursor: pointer;
   border: none;
+}
+
+.music-playlist {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  width: 300px;
+  max-width: calc(100vw - 40px);
+  border-radius: 12px;
+  background: linear-gradient(180deg,
+    hsla(206, 60%, 94%, 0.85),
+    hsla(212, 60%, 82%, 0.85));
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35),
+              0 0 0 1px rgba(255, 255, 255, 0.3) inset;
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(20px) scale(0.95);
+  transform-origin: bottom right;
+  transition: max-height 0.35s ease, opacity 0.25s ease, transform 0.35s ease, visibility 0.35s ease;
+}
+
+.music-playlist.open {
+  max-height: 320px;
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+  overflow-y: auto;
+}
+
+.music-playlist::-webkit-scrollbar {
+  width: 4px;
+}
+
+.music-playlist::-webkit-scrollbar-thumb {
+  background: rgba(0, 175, 244, 0.6);
+  border-radius: 4px;
+}
+
+.music-playlist::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.music-playlist-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.music-playlist-item:last-child {
+  border-bottom: none;
+}
+
+.music-playlist-item:hover {
+  background-color: rgba(0, 175, 244, 0.18);
+}
+
+.music-playlist-item.active {
+  background-color: rgba(0, 175, 244, 0.32);
+}
+
+.music-playlist-cover {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 6px;
+  background-color: #333;
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.music-playlist-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.music-playlist-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #0d1b2a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.music-playlist-artist {
+  font-size: 10px;
+  color: #415a77;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.music-playlist-duration {
+  font-size: 10px;
+  color: #415a77;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
 }
