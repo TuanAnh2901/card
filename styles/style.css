@@ -2,7 +2,6 @@
 .badges,
 .badges .badges-right,
 .container,
-.custom-status,
 .id,
 .name-box {
   display: flex
@@ -330,7 +329,6 @@ a:hover.tooltip::after {
 
 .badges,
 .badges .badges-left,
-.custom-status,
 .name-box,
 .name-box * {
   width: fit-content
@@ -439,26 +437,6 @@ a:hover.tooltip::after {
 .pronouns {
   font-weight: 400;
   margin: 3px 0 0
-}
-
-.custom-status {
-  flex-direction: row;
-  justify-items: center;
-  align-items: center;
-  padding: 0 0 10px
-}
-
-.custom-status img {
-  width: 24px !important;
-  height: 24px !important;
-  object-fit: cover;
-  image-rendering: pixelated
-}
-
-.custom-status-text {
-  margin: 0;
-  padding: 0;
-  font-weight: 400
 }
 
 .about-me {
