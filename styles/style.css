@@ -119,7 +119,9 @@ body {
   justify-content: center;
   align-items: center;
   width: 100%;
-  height: 100vh
+  min-height: 100vh;
+  padding: 50px 15px;
+  box-sizing: border-box
 }
 
 .container::before {
@@ -132,20 +134,19 @@ body {
   bottom: 0;
   background-image: url("../public/bg.webp");
   background-repeat: no-repeat;
-  background-size: cover;
-  background-position: center;
   z-index: -1;
-  filter: blur(5px) saturate(140%);
+  filter: blur(5px);
   background-color: var(--surface-page);
-  background-blend-mode: soft-light;
-  opacity: .55
+  background-blend-mode: darken;
+  background-size: cover;
+  background-position: center
 }
 
 .profile-border {
   box-shadow: 5px 5px 15px rgba(0, 0, 0, .1);
   padding: 5px;
   flex-direction: column;
-  max-height: calc(100% - 100px)
+  max-height: none
 }
 
 .chat-container,
@@ -162,7 +163,7 @@ body {
   --primary-s-bottom: 55%;
   --primary-l-bottom: 19%;
   width: 600px;
-  max-height: calc(100vh - 100px)
+  max-height: none
 }
 
 .avatar,
@@ -223,6 +224,7 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  opacity: 1;
   animation: auraPulse 4s ease-in-out infinite
 }
 
@@ -237,7 +239,7 @@ body {
 
 .body,
 .content {
-  max-height: calc(100vh - 530px)
+  max-height: calc(100vh - 300px)
 }
 
 .id::after,
@@ -490,9 +492,9 @@ a:hover.tooltip::after {
 .content {
   border-top: 1px solid var(--box-shadow-color);
   overflow-x: hidden;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  scroll-snap-type: y mandatory;
   -ms-overflow-style: none;
   scrollbar-width: none;
   padding: 5px
