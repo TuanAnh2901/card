@@ -16,11 +16,12 @@
 
 *,
 .id {
-  font-family: "Playpen Sans", cursive
+  font-family: "Chakra Petch", "Segoe UI", sans-serif
 }
 
 .display-name,
 .username {
+  font-family: "Russo One", "Chakra Petch", sans-serif;
   color: var(--text-color)
 }
 
