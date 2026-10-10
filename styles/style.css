@@ -48,7 +48,11 @@
   --color-violet: #9D6BFF;
   --color-accent: #F43F5E;
   --color-border: #4C1D95;
-  --color-green: #1ED760
+  --color-green: #1ED760;
+  --glass-tint: hsla(260, 40%, 70%, .13);
+  --glass-blur: blur(16px) saturate(165%);
+  --glass-edge: inset 0 1px 0 hsla(260, 60%, 92%, .32);
+  --glass-shadow: 0 6px 22px rgba(0, 0, 0, .38), 0 1px 0 hsla(260, 60%, 90%, .18)
 }
 
 .badges,
@@ -94,15 +98,6 @@ html {
 img {
   opacity: 0;
   animation: 1s ease-in forwards fadeIn
-}
-
-.about-section a {
-  color: #00aff4;
-  text-decoration: none
-}
-
-.about-section a:hover {
-  text-decoration: underline
 }
 
 body {
@@ -522,9 +517,11 @@ a:hover.tooltip::after {
 }
 
 .roles-body .rol {
-  background: linear-gradient(to bottom, hsl(var(--primary-h-top), var(--primary-s-top), var(--primary-l-top)), hsl(var(--primary-h-bottom), var(--primary-s-bottom), var(--primary-l-bottom)));
-  --primary-l-top: 24%;
-  --primary-l-bottom: 24%;
+  background: var(--glass-tint);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-edge);
+  border-radius: 11px;
   display: flex;
   -webkit-box-align: center;
   -ms-flex-align: center;
@@ -563,7 +560,12 @@ a:hover.tooltip::after {
   -webkit-box-align: center;
   -ms-flex-align: center;
   align-items: center;
-  text-decoration: none
+  text-decoration: none;
+  border-radius: 12px;
+  background: var(--glass-tint);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-edge), var(--glass-shadow)
 }
 
 .platform-username {
@@ -576,8 +578,10 @@ a:hover.tooltip::after {
   flex-grow: 1
 }
 
-.platform::hover {
-  text-decoration: none
+.platform:hover {
+  text-decoration: none;
+  background: hsla(260, 45%, 72%, .2);
+  box-shadow: var(--glass-edge), 0 8px 26px rgba(0, 0, 0, .46)
 }
 
 .platform-icon {
@@ -724,10 +728,14 @@ a:hover.tooltip::after {
   padding: 8px 12px;
   margin-top: 10px;
   margin-left: auto;
-  border-radius: 5px;
+  border-radius: 14px;
   gap: 10px;
   flex-wrap: wrap;
   max-width: 320px;
+  background: var(--glass-tint);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-edge), var(--glass-shadow)
 }
 
 .music-cover {
@@ -738,7 +746,8 @@ a:hover.tooltip::after {
   background-color: #333;
   background-size: cover;
   background-position: center;
-  border: 2px solid var(--text-color);
+  border: 1px solid hsla(260, 60%, 88%, .5);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .35)
 }
 
 .music-cover.playing {
@@ -769,7 +778,7 @@ a:hover.tooltip::after {
 
 .music-artist {
   font-size: 9px;
-  color: #666;
+  color: var(--color-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -789,7 +798,7 @@ a:hover.tooltip::after {
 }
 
 .music-controls i:hover {
-  color: #00aff4;
+  color: #9D6BFF;
 }
 
 .music-controls #music-play {
@@ -805,12 +814,12 @@ a:hover.tooltip::after {
 }
 
 .music-controls #music-repeat-one:hover {
-  color: #00aff4;
+  color: #9D6BFF;
   transform: scale(1.1);
 }
 
 .music-controls #music-repeat-one.active {
-  color: #00aff4;
+  color: #9D6BFF;
 }
 
 .music-controls #music-repeat-one.active::after {
@@ -823,7 +832,7 @@ a:hover.tooltip::after {
   font-style: normal;
   font-family: var(--font, sans-serif);
   line-height: 1;
-  color: #00aff4;
+  color: #9D6BFF;
 }
 
 .music-controls #music-playlist-toggle {
@@ -834,11 +843,11 @@ a:hover.tooltip::after {
 }
 
 .music-controls #music-playlist-toggle:hover {
-  color: #00aff4;
+  color: #9D6BFF;
 }
 
 .music-controls #music-playlist-toggle.active {
-  color: #00aff4;
+  color: #9D6BFF;
 }
 
 .music-progress {
@@ -860,7 +869,7 @@ a:hover.tooltip::after {
 .music-progress-fill {
   height: 100%;
   width: 0;
-  background: linear-gradient(90deg, #00aff4, #1db954);
+  background: linear-gradient(90deg, #9D6BFF, #F43F5E);
   border-radius: 10px;
   transition: width 0.1s linear;
 }
@@ -899,7 +908,7 @@ a:hover.tooltip::after {
   appearance: none;
   width: 8px;
   height: 8px;
-  background: #00aff4;
+  background: #9D6BFF;
   border-radius: 50%;
   cursor: pointer;
 }
@@ -907,7 +916,7 @@ a:hover.tooltip::after {
 .music-volume input[type="range"]::-moz-range-thumb {
   width: 8px;
   height: 8px;
-  background: #00aff4;
+  background: #9D6BFF;
   border-radius: 50%;
   cursor: pointer;
   border: none;
@@ -920,14 +929,14 @@ a:hover.tooltip::after {
   z-index: 1000;
   width: 300px;
   max-width: calc(100vw - 40px);
-  border-radius: 12px;
+  border-radius: 18px;
   background: linear-gradient(180deg,
-    hsla(206, 60%, 94%, 0.85),
-    hsla(212, 60%, 82%, 0.85));
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  backdrop-filter: blur(20px) saturate(160%);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35),
-              0 0 0 1px rgba(255, 255, 255, 0.3) inset;
+    hsla(260, 42%, 22%, .62),
+    hsla(260, 46%, 12%, .68));
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-edge), 0 10px 34px rgba(0, 0, 0, .48),
+              0 0 0 1px hsla(260, 60%, 80%, .12);
   overflow: hidden;
   max-height: 0;
   opacity: 0;
@@ -973,11 +982,11 @@ a:hover.tooltip::after {
 }
 
 .music-playlist-item:hover {
-  background-color: rgba(0, 175, 244, 0.18);
+  background-color: hsla(260, 60%, 62%, .16);
 }
 
 .music-playlist-item.active {
-  background-color: rgba(0, 175, 244, 0.32);
+  background-color: hsla(260, 60%, 62%, .3);
 }
 
 .music-playlist-cover {
@@ -1001,7 +1010,7 @@ a:hover.tooltip::after {
 .music-playlist-name {
   font-size: 12px;
   font-weight: 600;
-  color: #0d1b2a;
+  color: #E2E8F0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1009,7 +1018,7 @@ a:hover.tooltip::after {
 
 .music-playlist-artist {
   font-size: 10px;
-  color: #415a77;
+  color: #A8B3C4;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1017,7 +1026,7 @@ a:hover.tooltip::after {
 
 .music-playlist-duration {
   font-size: 10px;
-  color: #415a77;
+  color: #A8B3C4;
   font-variant-numeric: tabular-nums;
   font-weight: 500;
 }
