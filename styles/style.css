@@ -597,19 +597,19 @@ a:hover.tooltip::after {
 }
 
 .softpink {
-  color: #c76587
+  color: var(--color-accent)
 }
 
 .rosepink {
-  color: #cf48c9
+  color: var(--color-violet)
 }
 
 .green {
-  color: #1ed760
+  color: var(--color-green)
 }
 
 .blue {
-  color: #00aff4
+  color: #67E8F9
 }
 
 .chat-container {
