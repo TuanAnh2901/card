@@ -40,7 +40,7 @@ Every push repeats this. The name, username and status dot currently look correc
 ## Non-goals
 
 - No new framework. No build step. Static HTML/CSS/JS as today.
-- No raster images added. See "Why no new images" below. The four new badge SVGs are the only new files under `public/`.
+- No raster images added. See "Why no new images" below. The three new badge SVGs are the only new files under `public/`.
 - `music.js`, the music playlist and the audio files are untouched.
 - The DOM structure is not restructured; only class names, text and colour values change.
 - Social links are not added or removed.
@@ -101,7 +101,7 @@ The Lanyard server membership step is deliberately **not** part of this design. 
 - `<script async src="./scripts/script.js">` removed.
 - `.custom-status` markup removed. No JS updates it any more.
 - Pronouns line becomes `Vũ Tuấn Anh`, and the About paragraph is corrected to name Vu as the family name.
-- Badge row gains four new `<img>` entries: C#, Python, Vietnam flag, repo count. The four existing Discord badges stay.
+- Badge row gains three new `<img>` entries: C#, Python, and the Vietnam flag. The four existing Discord badges stay. A repo-count badge was considered and dropped: the number is a snapshot that drifts, and a stale figure on a profile card is worse than no figure.
 - New badge files land in `public/badges/`.
 
 The status dot stays as a static `online.svg` and is treated as decoration, not a claim. It is not read from any source and never changes. This is a direct consequence of choosing a static card: the card cannot know whether the owner is online, so the dot is visual furniture rather than information. Removing it is out of scope because `.status` is absolutely positioned against the avatar and its removal reflows the header.
@@ -121,9 +121,8 @@ The status dot stays as a static `online.svg` and is treated as decoration, not 
 | `public/badges/lang-csharp.svg` | `C#` wordmark |
 | `public/badges/lang-python.svg` | Python wordmark |
 | `public/badges/country-vietnam.svg` | Flag of Vietnam |
-| `public/badges/repos-count.svg` | `65 REPOS` |
 
-All four are hand-authored SVG, sized to the existing 72×72 badge box so the row needs no layout change. Each carries a `<title>` for screen readers and the four badge links keep their `aria-label` tooltips.
+All three are hand-authored SVG, sized to the existing 72×72 badge box so the row needs no layout change. Each carries a `<title>` for screen readers and the badge links keep their `aria-label` tooltips.
 
 ## Data provenance
 
@@ -134,11 +133,21 @@ Every number in a new badge came from the GitHub REST API on 2026-10-09:
 | `lang-csharp` | `language` across `GET /users/TuanAnh2901/repos` | 8 repos |
 | `lang-python` | same | 7 repos |
 | `country-vietnam` | `location` on `GET /users/TuanAnh2901` | `Vietnam` |
-| `repos-count` | `public_repos` on same | `65` |
+
 
 Only C# and Python appear. The API reports C, C++, TypeScript, Java, Lua, Shell, Go, PowerShell, CSS, JavaScript and Vue as well; those are deliberately excluded because the owner named C# and Python as the languages they actually use.
 
-These counts are frozen at design time. They will drift. Accept it: the card is static by design, and the badge says "65 repos" as a snapshot, not a live counter.
+
+Both remaining counts are equally frozen at design time and equally likely to drift. The owner accepted that: the card is static by design, so these badges are a snapshot, not live counters. A future owner who wants them live would need the GitHub API at render time, which a GitHub Pages static site cannot do.
+
+### Rejected alternatives
+
+| Alternative | Why rejected |
+|---|---|
+| Restore Lanyard live status | Requires the owner to join the Lanyard Discord server and run `/watch`. The owner chose a static card. |
+| Repo-count badge | Snapshot figure goes stale. |
+| TypeScript badge | Owner named C# and Python as the languages they use. |
+| New anime artwork | Existing images cannot be inspected; no trustworthy free source. Delivered via CSS aura instead. |
 
 ## Verification
 
