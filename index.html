@@ -114,7 +114,7 @@
 									onclick="copyToClipboard()">kasugatowa</button>
 								<span class="pronouns">Vũ Tuấn Anh</span>
 							</div>
-							<div class="music-player">
+							<div class="music-player" data-glass>
 								<div class="music-cover" id="music-cover"></div>
 								<div class="music-info">
 									<div class="music-title" id="music-title">Loading...</div>
@@ -167,19 +167,19 @@
 								<div class="title-body">ROLES</div>
 								<div class="roles-body">
 									<!-- roles list -->
-									<div class="rol rosepink">
+									<div class="rol rosepink" data-glass>
 										<i class="fas fa-circle"></i>
 										<span>FapHero</span>
 									</div>
-									<div class="rol softpink">
+									<div class="rol softpink" data-glass>
 										<i class="fas fa-circle"></i>
 										<span>Weeb Developer</span>
 									</div>
-									<div class="rol green">
+									<div class="rol green" data-glass>
 										<i class="fas fa-circle"></i>
 										<span>Gamer</span>
 									</div>
-									<div class="rol blue">
+									<div class="rol blue" data-glass>
 										<i class="fas fa-circle"></i>
 										<span>Blooms🌸</span>
 									</div>
@@ -193,6 +193,7 @@
 									<div class="column">
 										<a
 											class="platform"
+											data-glass
 											href="https://steamcommunity.com/id/TunaInTheVoid/"
 											rel="noreferrer noopener"
 											target="_blank">
@@ -215,6 +216,7 @@
 										</a>
 										<a
 											class="platform"
+											data-glass
 											href="https://www.tiktok.com/@tuananh29105"
 											rel="noreferrer noopener"
 											target="_blank">
@@ -237,6 +239,7 @@
 									<div class="column">
 										<a
 											class="platform"
+											data-glass
 											href="https://github.com/TuanAnh2901"
 											rel="noreferrer noopener"
 											target="_blank">
@@ -259,6 +262,7 @@
 										</a>
 										<!-- <a
 											class="platform"
+											data-glass
 											href="https://discord.gg/FpWq76bMGA"
 											rel="noreferrer noopener"
 											target="_blank">
@@ -294,8 +298,10 @@
 				</div>
 			</div>
 		</div>
-		<div class="music-playlist" id="music-playlist"></div>
+		<div class="music-playlist" id="music-playlist" data-glass></div>
+		<div id="glass-controls"></div>
 		<script defer src="./scripts/sub.js"></script>
 		<script src="./scripts/music.js"></script>
+		<script defer src="./scripts/glass.js"></script>
 	</body>
 </html>

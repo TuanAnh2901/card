@@ -1066,3 +1066,261 @@ a:hover.tooltip::after {
     text-shadow: none
   }
 }
+
+/* ---------------------------------------------------------------- glass ui */
+
+.lg-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none
+}
+
+#glass-controls {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 1001;
+  font-family: "Chakra Petch", sans-serif
+}
+
+.lg-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 38px;
+  height: 38px;
+  justify-content: center;
+  padding: 0;
+  cursor: pointer;
+  color: var(--text-color);
+  border: 1px solid hsla(260, 60%, 88%, .22);
+  border-radius: 50%;
+  background: var(--glass-tint);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-edge), var(--glass-shadow);
+  transition: transform .2s ease
+}
+
+.lg-toggle:hover {
+  transform: scale(1.06)
+}
+
+.lg-dot {
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-muted)
+}
+
+.lg-dot[data-mode="glass"] { background: var(--color-violet) }
+.lg-dot[data-mode="refract"] { background: var(--color-accent) }
+.lg-dot[data-mode="off"] { background: #64748B }
+
+.lg-panel {
+  margin-top: 8px;
+  width: 208px;
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid hsla(260, 60%, 88%, .18);
+  background: hsla(260, 42%, 14%, .72);
+  -webkit-backdrop-filter: blur(22px) saturate(170%);
+  backdrop-filter: blur(22px) saturate(170%);
+  box-shadow: var(--glass-edge), 0 12px 34px rgba(0, 0, 0, .5)
+}
+
+.lg-panel[hidden] { display: none }
+
+.lg-row {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px
+}
+
+.lg-mode {
+  flex: 1;
+  padding: 6px 0;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--color-muted);
+  background: transparent;
+  border: 1px solid hsla(260, 60%, 88%, .16);
+  border-radius: 9px;
+  transition: background .18s ease, color .18s ease
+}
+
+.lg-mode[aria-checked="true"] {
+  color: #0B0716;
+  background: var(--color-violet);
+  border-color: transparent
+}
+
+.lg-slider,
+.lg-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-size: 12px;
+  color: var(--color-muted)
+}
+
+.lg-slider input { flex: 1 }
+.lg-slider output { min-width: 22px; text-align: right; color: var(--text-color) }
+.lg-check { cursor: pointer }
+
+.lg-note {
+  margin: 6px 0 0;
+  font-size: 11px;
+  color: #8B87A8
+}
+
+input[type="range"] {
+  accent-color: var(--color-violet)
+}
+
+.lg-ripple {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle, hsla(260, 90%, 84%, .5), transparent 68%);
+  transform: scale(0);
+  animation: lgRipple .55s ease-out
+}
+
+/* Theme. The refract pass reads the same numbers through u_tint, so a theme
+   has to exist in both places or the two modes drift apart. */
+[data-lgtheme="abyss"] {
+  --glass-tint: hsla(216, 45%, 62%, .14);
+  --glass-edge: inset 0 1px 0 hsla(216, 70%, 88%, .32);
+  --color-violet: #6FA8FF;
+}
+
+[data-lgtheme="crimson"] {
+  --glass-tint: hsla(350, 55%, 62%, .14);
+  --glass-edge: inset 0 1px 0 hsla(350, 70%, 90%, .32);
+  --color-violet: #FF6B85;
+}
+
+[data-lgtheme="emerald"] {
+  --glass-tint: hsla(160, 45%, 55%, .14);
+  --glass-edge: inset 0 1px 0 hsla(160, 65%, 86%, .32);
+  --color-violet: #4ADE9E;
+}
+
+[data-lgtheme="frost"] {
+  --glass-tint: hsla(205, 40%, 78%, .16);
+  --glass-edge: inset 0 1px 0 hsla(205, 70%, 96%, .38);
+  --color-violet: #A8CEF0;
+}
+
+/* Layer mode. Rings are injected as children, so the host has to trap them;
+   overflow:hidden here would clip the outward step, so the mask does it. */
+[data-lg="glass4"] [data-glass],
+[data-lg="glass16"] [data-glass] {
+  isolation: isolate
+}
+
+.lg-ring {
+  display: block;
+  pointer-events: none
+}
+
+[data-lg="glass16"] .lg-ring {
+  animation: lgRingShift 6s ease-in-out infinite alternate
+}
+
+@keyframes lgRingShift {
+  to {
+    filter: hue-rotate(24deg)
+  }
+}
+
+.lg-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-size: 12px;
+  color: var(--color-muted)
+}
+
+.lg-field > span {
+  min-width: 42px
+}
+
+.lg-field input[type="range"] {
+  flex: 1
+}
+
+.lg-field output {
+  min-width: 26px;
+  text-align: right;
+  color: var(--text-color)
+}
+
+.lg-field select {
+  flex: 1;
+  font: inherit;
+  font-size: 12px;
+  padding: 4px 6px;
+  color: var(--text-color);
+  background: hsla(260, 40%, 18%, .9);
+  border: 1px solid hsla(260, 60%, 88%, .18);
+  border-radius: 8px
+}
+
+.lg-divider {
+  height: 1px;
+  margin: 4px 0 10px;
+  background: hsla(260, 60%, 88%, .12)
+}
+
+@keyframes lgRipple {
+  to {
+    transform: scale(1);
+    opacity: 0
+  }
+}
+
+/* In refract mode the CSS glass is replaced by the WebGL pass. */
+[data-lg="refract"] .music-player,
+[data-lg="refract"] .music-playlist,
+[data-lg="refract"] .roles-body .rol,
+[data-lg="refract"] .platform {
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none
+}
+
+[data-lg="refract"] .music-playlist {
+  border: 1px solid hsla(260, 60%, 84%, .22)
+}
+
+[data-lg="off"] .music-player,
+[data-lg="off"] .music-playlist,
+[data-lg="off"] .roles-body .rol,
+[data-lg="off"] .platform {
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lg-toggle,
+  .lg-mode {
+    transition: none
+  }
+
+  .lg-ripple {
+    animation: none;
+    opacity: 0
+  }
+}
