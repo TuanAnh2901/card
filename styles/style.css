@@ -222,7 +222,8 @@ body {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%)
+  transform: translate(-50%, -50%);
+  animation: auraPulse 4s ease-in-out infinite
 }
 
 .status {
@@ -1017,4 +1018,40 @@ a:hover.tooltip::after {
   color: #415a77;
   font-variant-numeric: tabular-nums;
   font-weight: 500;
+}
+
+@keyframes auraPulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 6px rgba(157, 107, 255, .55)) drop-shadow(0 0 14px rgba(157, 107, 255, .35))
+  }
+
+  50% {
+    filter: drop-shadow(0 0 10px rgba(244, 63, 94, .65)) drop-shadow(0 0 26px rgba(157, 107, 255, .5))
+  }
+}
+
+@keyframes nameGlow {
+  0%,
+  100% {
+    text-shadow: 0 0 8px rgba(157, 107, 255, .35)
+  }
+
+  50% {
+    text-shadow: 0 0 16px rgba(157, 107, 255, .6)
+  }
+}
+
+.name-box .display-name,
+.name-box .username {
+  animation: nameGlow 4s ease-in-out infinite
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .avatar-decoration,
+  .name-box .display-name,
+  .name-box .username {
+    animation: none;
+    text-shadow: none
+  }
 }
