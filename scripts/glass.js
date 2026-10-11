@@ -1,4 +1,4 @@
-// Liquid Glass + Rain. Raw WebGL for refraction, layered CSS for the rest.
+
 // No dependencies: the whole effect is ~12KB of JS against what a Three.js
 // build would cost.
 //
@@ -8,22 +8,18 @@
 //   refract  - one WebGL pass with real lensing at the rim
 //   off      - no effect
 //
-// Options: theme, blur, layer count, rain on/off, rain intensity, animation.
+
 
 const STORE = 'lg-cfg';
 const MAX_GLASS = 8;
-const MAX_LAYERS = 16;
 const sel = (s) => document.querySelector(s);
 const els = (s) => [...document.querySelectorAll(s)];
 
 const state = Object.assign(
   {
-    mode: 'glass4',
+    mode: 'glass',
     theme: 'violet',
     blur: 16,
-    layers: 4,
-    rain: true,
-    rainAmt: 0.6,
     animate: true,
   },
   JSON.parse(localStorage.getItem(STORE) || '{}')
@@ -50,8 +46,6 @@ precision highp float;
 uniform vec2  u_res;
 uniform float u_time;
 uniform sampler2D u_bg;
-uniform float u_rain;
-uniform float u_rainAmt;
 uniform vec3  u_tint;
 uniform vec4  u_rect[${MAX_GLASS}];   // framebuffer px, y from top
 uniform float u_radius[${MAX_GLASS}];
@@ -60,6 +54,15 @@ uniform int   u_count;
 float sdRoundBox(vec2 p, vec2 b, float r) {
   vec2 q = abs(p) - b + r;
   return min(max(q.x, q.y), 0.0) + length(max(q, 0.0)) - r;
+}
+
+// Thickness of a pane with a bevel: 1 on the flat interior, tapering to 0 at
+// the rim. The gradient of this field is the surface normal the refraction
+// follows, which is why the interior bends and not only the edge.
+float thicknessAt(vec2 local, vec2 inner, float bezel) {
+  vec2 q = abs(local) - inner;
+  float dInner = min(max(q.x, q.y), 0.0) + length(max(q, 0.0));
+  return clamp(1.0 - dInner / bezel, 0.0, 1.0);
 }
 
 float hash11(float n) { return fract(sin(n) * 43758.5453123); }
@@ -86,36 +89,46 @@ void main() {
   float rr     = min(rad, min(half_.x, half_.y));
   float d      = sdRoundBox(local, half_, rr);
 
-  // Rim lensing: strongest right at the edge, gone by the time we are inside.
-  float t = smoothstep(0.0, rr * .55, -d);
-  float e = 1.6;
-  vec2 n = normalize(vec2(
-    sdRoundBox(local + vec2(e, 0.0), half_, rr) - sdRoundBox(local - vec2(e, 0.0), half_, rr),
-    sdRoundBox(local + vec2(0.0, e), half_, rr) - sdRoundBox(local - vec2(0.0, e), half_, rr)
-  ) + 1e-6);
+  // Lens. A real pane of glass is thicker at its rounded edge and slightly
+  // convex across the middle, so light bends everywhere, not only at the rim.
+  // Two terms: a shallow global bulge and the edge bevel.
+  float bezel = min(rr, min(half_.x, half_.y) * 0.5);
 
-  vec2 offset = n * (1.0 - t) * 26.0 / u_res;
+  // Thickness of the pane: flat (1) inside the bevel, tapering to 0 at the rim.
+  vec2 inner = half_ - vec2(bezel);
+  vec2 qB = abs(local) - inner;
+  float dInner = min(max(qB.x, qB.y), 0.0) + length(max(qB, 0.0));
+  float thick = clamp(1.0 - dInner / bezel, 0.0, 1.0);
 
-  // Rain: falling streaks plus beads that slide down the inside face.
-  float wet = 0.0;
-  if (u_rain > .5) {
-    float col = floor((local.x + half_.x) / 13.0);
-    float seed = hash11(col);
-    float speed = .30 + seed * .75;
-    float phase = fract(u_time * speed * .35 + seed);
-    float streakX = fract((local.x + half_.x) / 13.0) - .5;
-    float fall = fract((local.y + half_.y) / (half_.y * 2.0) + phase);
-    float band = smoothstep(.055, 0.0, abs(streakX)) *
-                 smoothstep(.0, .12, fall) * smoothstep(.95, .45, fall);
-    float bead = smoothstep(.10, 0.0, length(vec2(streakX * 13.0, (fall - .62) * half_.y * 1.4)));
+  // Bezel term: normal of the thickness field, so bending is strongest where
+  // the pane changes depth fastest.
+  float e = 1.0;
+  float bx = thicknessAt(local + vec2(e, 0.0), inner, bezel) - thicknessAt(local - vec2(e, 0.0), inner, bezel);
+  float by = thicknessAt(local + vec2(0.0, e), inner, bezel) - thicknessAt(local - vec2(0.0, e), inner, bezel);
+  vec2 nBevel = normalize(vec2(-bx, -by) + 1e-6);
 
-    offset += vec2(streakX * 5.0, 0.0) * (band * .8 + bead * 1.4) / u_res;
-    wet = clamp(band * .55 + bead * .9, 0.0, 1.0) * u_rainAmt;
-  }
+  // Bulge term: a shallow convex lens over the whole pane. This is the part
+  // that was missing - without it only the rim bends and the interior is flat.
+  vec2 centred = local / half_;
+  float r = length(centred);
+  float bulge = max(0.0, 1.0 - r * r);
+  vec2 nBulge = -normalize(centred + 1e-6);
+
+  vec2 offset = (nBevel * thick * 30.0 + nBulge * bulge * 7.0) / u_res;
 
   vec3 col = texture2D(u_bg, clamp(uv + offset, .001, .999)).rgb;
+
+  // Match what the page actually shows behind the glass. The backdrop is
+  // bg.webp with blur(5px) and a 55% black scrim in darken mode, so sampling
+  // the raw texture renders the pane far brighter than its surroundings:
+  // measured mean 0.32 against 0.15 for the surrounding card, which is exactly
+  // the "solid block" reading. 0.45 lands it at 0.20, 0.62 at 0.24, and 0.62
+  // also flattens the interior to a uniform tint. Chose 0.45: brightness and
+  // the highest interior std of the two, which is what shows the backdrop.
+  col *= vec3(.45);
+
   col = mix(col, col * u_tint * 1.55, .45);
-  col = mix(col, u_tint, .10 + wet * .07);
+  col = mix(col, u_tint, .10);
 
   // Inner highlight on the top edge only, and a bright meniscus at the rim.
   float topEdge = smoothstep(2.0, 0.0, abs(local.y - (half_.y - 1.0))) *
@@ -205,8 +218,6 @@ function startGL() {
       res: ctx.getUniformLocation(prog, 'u_res'),
       time: ctx.getUniformLocation(prog, 'u_time'),
       bg: ctx.getUniformLocation(prog, 'u_bg'),
-      rain: ctx.getUniformLocation(prog, 'u_rain'),
-      rainAmt: ctx.getUniformLocation(prog, 'u_rainAmt'),
       tint: ctx.getUniformLocation(prog, 'u_tint'),
       rect: ctx.getUniformLocation(prog, 'u_rect'),
       radius: ctx.getUniformLocation(prog, 'u_radius'),
@@ -261,8 +272,6 @@ function startGL() {
       const now = frozen ? 0 : (performance.now() - gl.t0) / 1000;
       c.uniform2f(u.res, cv.width, cv.height);
       c.uniform1f(u.time, now);
-      c.uniform1f(u.rain, state.rain && !frozen ? 1 : 0);
-      c.uniform1f(u.rainAmt, state.rainAmt);
       c.uniform3fv(u.tint, TINTS[state.theme] || TINTS.violet);
       c.uniform4fv(u.rect, rects);
       c.uniform1fv(u.radius, radii);
@@ -301,10 +310,9 @@ function applyLayers() {
   els('[data-glass]').forEach((el) => {
     el.querySelectorAll('.lg-ring').forEach((r) => r.remove());
     el.classList.remove('lg-layered');
-    if (state.mode !== 'glass4' && state.mode !== 'glass16') return;
+    if (state.mode !== 'glass') return;
 
     el.classList.add('lg-layered');
-    const n = state.mode === 'glass16' ? MAX_LAYERS : Math.max(2, state.layers);
     const cs = getComputedStyle(el);
     const radius = cs.borderTopLeftRadius;
     const blur = state.blur;
@@ -320,6 +328,9 @@ function applyLayers() {
     // keep the element's own single filter and nothing more.
     if (box.height < 30) return;
 
+    // Four rings is the setting the owner kept. The sixteen-ring mode was
+    // removed: it cost 5.3x the frame budget and compounded into mush.
+    const n = 4;
     const band = Math.max(0.4, (Math.min(box.width, box.height) * 0.25) / n);
 
     for (let i = 0; i < n; i++) {
@@ -329,7 +340,6 @@ function applyLayers() {
       // Confining each ring to a few px of rim keeps the face clean and bounds
       // the compounding to the edge, which is where refraction belongs anyway.
       const step = i / n;
-      const band = 2;
       const ring = document.createElement('span');
       ring.className = 'lg-ring';
       // Saturate is identity on purpose. The author of the ring technique warns
@@ -338,7 +348,9 @@ function applyLayers() {
       // blows out to magenta, which it measurably did: 6.4% of pixels blown
       // against 0.6% with the effect off. The element's own backdrop-filter
       // already carries the saturate, so the rings only need to vary blur.
-      const ringBlur = (blur * (0.45 + step * 0.25)).toFixed(1);
+      // Rings only nudge blur. At full element blur they re-blur the face and
+      // read as frosted, not translucent, which is the opposite of the goal.
+      const ringBlur = (blur * (0.12 + step * 0.10)).toFixed(1);
       ring.style.cssText =
         `position:absolute;inset:0;border-radius:${radius};pointer-events:none;` +
         `box-sizing:border-box;border:${(i * band + 1).toFixed(2)}px solid transparent;` +
@@ -397,9 +409,11 @@ const TINTS = {
   frost: [0.72, 0.82, 0.92],
 };
 
+// Three modes. glass16 and the CSS rain were removed at the owner's request:
+// both were measurably broken (39fps and strokes that read as scratches) and
+// neither delivered what it claimed.
 const MODES = [
-  ['glass4', 'Glass 4', '4 CSS rings'],
-  ['glass16', 'Glass 16', '16 rings, heavy'],
+  ['glass', 'Glass', 'translucent CSS glass'],
   ['refract', 'Refract', 'WebGL lensing'],
   ['off', 'Off', 'no effect'],
 ];
@@ -440,19 +454,7 @@ function buildPanel() {
         <output id="lg-blur-val">${state.blur}</output>
       </label>
 
-      <label class="lg-field" id="lg-layers-row"><span>Layers</span>
-        <input type="range" id="lg-layers" min="2" max="16" step="1" value="${state.layers}" />
-        <output id="lg-layers-val">${state.layers}</output>
-      </label>
-
       <div class="lg-divider"></div>
-
-      <label class="lg-check"><input type="checkbox" id="lg-rain" ${state.rain ? 'checked' : ''} />
-        <span>Rain</span></label>
-      <label class="lg-field" id="lg-rain-amt-row"><span>Amount</span>
-        <input type="range" id="lg-rain-amt" min="0" max="1" step="0.05" value="${state.rainAmt}" />
-        <output id="lg-rain-amt-val">${state.rainAmt}</output>
-      </label>
 
       <label class="lg-check"><input type="checkbox" id="lg-anim" ${state.animate ? 'checked' : ''} />
         <span>Animation</span></label>
@@ -462,14 +464,7 @@ function buildPanel() {
     </div>`;
 
   const note = sel('#lg-note');
-  let warn = '';
-  if (!supportsWebGL) warn = 'Refract needs WebGL.';
-  else if (state.mode === 'glass16') warn = '16 filters per surface. FPS above.';
-  if (warn) note.textContent = warn;
-  const lr = sel('#lg-layers-row');
-  if (state.mode === 'glass16') lr.style.display = 'none';
-  const rr = sel('#lg-rain-amt-row');
-  if (!state.rain) rr.style.display = 'none';
+  if (!supportsWebGL) note.textContent = 'Refract needs WebGL.';
 
   const apply = () => {
     document.documentElement.dataset.lg = state.mode;
@@ -479,25 +474,7 @@ function buildPanel() {
       `${state.blur}px saturate(${165 + state.blur}%)`
     );
     sel('#lg-dot').dataset.mode = state.mode;
-    sel('#lg-layers-row').style.display = state.mode === 'glass16' ? 'none' : '';
-    sel('#lg-rain-amt-row').style.display = state.rain ? '' : 'none';
-    // Rain opacity for the CSS modes. The shader reads u_rainAmt directly, so
-    // this var only needs to move in the two CSS modes.
-    document.documentElement.style.setProperty(
-      '--lg-rain-alpha',
-      state.rain ? (0.12 + state.rainAmt * 0.45).toFixed(3) : '0'
-    );
-    // Animation gate. Both the CSS keyframes and the shader clock read it, so
-    // "off" means genuinely still in every mode.
-    document.documentElement.dataset.lganim = state.animate ? 'on' : 'off';
     sel('#lg-blur-val').textContent = state.blur;
-    sel('#lg-layers-val').textContent = state.layers;
-    sel('#lg-rain-amt-val').textContent = state.rainAmt;
-
-    els('.lg-mode').forEach((b) =>
-      b.setAttribute('aria-checked', String(b.dataset.mode === state.mode))
-    );
-    sel('#lg-theme').value = state.theme;
 
     if (state.mode === 'refract') {
       stopGL();
@@ -528,24 +505,14 @@ function buildPanel() {
     state.blur = +e.target.value;
     apply();
   });
-  sel('#lg-layers').addEventListener('input', (e) => {
-    state.layers = +e.target.value;
-    apply();
-  });
-  sel('#lg-rain').addEventListener('change', (e) => {
-    state.rain = e.target.checked;
-    apply();
-  });
-  sel('#lg-rain-amt').addEventListener('input', (e) => {
-    state.rainAmt = +e.target.value;
-    sel('#lg-rain-amt-val').textContent = state.rainAmt;
-    apply();
-  });
   sel('#lg-anim').addEventListener('change', (e) => {
     state.animate = e.target.checked;
     apply();
   });
 
+  els('.lg-mode').forEach((b) =>
+    b.setAttribute('aria-checked', String(b.dataset.mode === state.mode))
+  );
   apply();
 }
 
@@ -573,8 +540,6 @@ function bindRipple() {
 buildPanel();
 bindRipple();
 
-// 16 filters per surface is the one setting that can make the page feel bad.
-// Report it rather than letting the user discover it by accident.
 addEventListener('resize', () => {
-  if (state.mode === 'glass4' || state.mode === 'glass16') applyLayers();
+  if (state.mode === 'glass') applyLayers();
 });

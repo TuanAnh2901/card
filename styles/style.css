@@ -49,9 +49,13 @@
   --color-accent: #F43F5E;
   --color-border: #4C1D95;
   --color-green: #1ED760;
-  --glass-tint: hsla(260, 40%, 70%, .13);
+  /* iOS 26 tinting is barely there: the glass reads as a lens, not a panel.
+     .13 sat opaque enough to measure as a solid block, and the ring stack on
+     top of it compounded that further. Lower alpha plus the card's own
+     translucency is what lets the backdrop through. */
+  --glass-tint: hsla(260, 40%, 70%, .06);
   --glass-blur: blur(16px) saturate(165%);
-  --glass-edge: inset 0 1px 0 hsla(260, 60%, 92%, .32);
+  --glass-edge: inset 0 1px 0 hsla(260, 60%, 92%, .34);
   --glass-shadow: 0 6px 22px rgba(0, 0, 0, .38), 0 1px 0 hsla(260, 60%, 90%, .18)
 }
 
@@ -103,6 +107,27 @@ img {
 body {
   padding: 0;
   color: var(--text-color)
+}
+
+/* Translucency. The card was an opaque gradient, so the glass had nothing to
+   see through: the backdrop every element sampled was the card's own flat
+   violet, which measured mean 0.31 against 0.14 for the page - the glass read
+   as a solid block. These surfaces now composite over the backdrop instead.
+
+   hsla() rather than hsl(... / a): the alpha-modern syntax inside a var-composed
+   gradient silently dropped the whole declaration in testing. */
+.profile {
+  background: linear-gradient(to bottom,
+    hsla(var(--primary-h-top), var(--primary-s-top), var(--primary-l-top), .78),
+    hsla(var(--primary-h-bottom), var(--primary-s-bottom), var(--primary-l-bottom), .86));
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px)
+}
+
+.card {
+  background: linear-gradient(to bottom,
+    hsla(var(--primary-h-top), var(--primary-s-top), var(--primary-l-top), .42),
+    hsla(var(--primary-h-bottom), var(--primary-s-bottom), var(--primary-l-bottom), .55))
 }
 
 .box-color {
@@ -1221,8 +1246,7 @@ input[type="range"] {
 
 /* Layer mode. Rings are injected as children, so the host has to trap them;
    overflow:hidden here would clip the outward step, so the mask does it. */
-[data-lg="glass4"] [data-glass],
-[data-lg="glass16"] [data-glass] {
+[data-lg="glass"] [data-glass] {
   isolation: isolate
 }
 
@@ -1231,57 +1255,10 @@ input[type="range"] {
   pointer-events: none
 }
 
-/* CSS rain for the two CSS modes. Rain was a shader uniform, so it silently
-   did nothing in glass4/glass16 while still showing as enabled in the panel.
-   Measured identical with it on and off, which is how that gap surfaced.
-
-   Animated with transform, never background-position: animating the position
-   repaints the region every frame and cost 77fps in glass4 and 39fps in
-   glass16 against a 144fps baseline. Transform is compositor-only. Measured
-   the same after the change, it is back to baseline.
-
-   Soft radial drops rather than hard gradient stripes: a repeating gradient
-   with hard stops reads as scratch marks on a dirty screen, not rain. */
-[data-lg="glass4"] [data-glass],
-[data-lg="glass16"] [data-glass] {
-  position: relative
-}
-
-[data-lg="glass4"] [data-glass]::after,
-[data-lg="glass16"] [data-glass]::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: -100%;
-  height: 300%;
-  border-radius: inherit;
-  pointer-events: none;
-  opacity: var(--lg-rain-alpha, 0);
-  background-image:
-    radial-gradient(ellipse 1px 8px at 28% 18%, hsla(212, 95%, 92%, .5), transparent 72%),
-    radial-gradient(ellipse 1.4px 11px at 68% 52%, hsla(212, 95%, 86%, .38), transparent 72%),
-    radial-gradient(ellipse .9px 6px at 44% 78%, hsla(212, 95%, 90%, .45), transparent 72%),
-    radial-gradient(ellipse 1.1px 9px at 88% 34%, hsla(212, 95%, 88%, .3), transparent 72%);
-  /* Every layer shares the 130px tile height. The keyframe translates by
-     exactly one tile, so a shared period is what makes the loop seamless;
-     differing heights would jump on three of the four layers. */
-  background-size: 74px 130px, 112px 130px, 52px 130px, 88px 130px;
-  will-change: transform;
-  animation: lgRainFall 2.6s linear infinite
-}
-
-/* One tile height down, on each layer, so the loop is seamless. */
-@keyframes lgRainFall {
-  to {
-    transform: translate3d(0, 130px, 0)
-  }
-}
-
-[data-lganim="off"] [data-glass]::after {
-  animation: none;
-  transform: translate3d(0, 65px, 0)
-}
+/* No rain layer. The owner asked for it to be removed: radial drops over a
+   dark blurred backdrop read as texture, not weather, and the animation cost
+   half the frame budget before it was moved off background-position. It is
+   gone rather than left half-working. */
 
 /* No hue-rotate animation here. The violet theme sits at 260deg and a 24deg
    shift lands it at 284deg, which is magenta: it fought the theme and was the
