@@ -48,15 +48,7 @@
   --color-violet: #9D6BFF;
   --color-accent: #F43F5E;
   --color-border: #4C1D95;
-  --color-green: #1ED760;
-  /* iOS 26 tinting is barely there: the glass reads as a lens, not a panel.
-     .13 sat opaque enough to measure as a solid block, and the ring stack on
-     top of it compounded that further. Lower alpha plus the card's own
-     translucency is what lets the backdrop through. */
-  --glass-tint: hsla(260, 40%, 70%, .06);
-  --glass-blur: blur(16px) saturate(165%);
-  --glass-edge: inset 0 1px 0 hsla(260, 60%, 92%, .34);
-  --glass-shadow: 0 6px 22px rgba(0, 0, 0, .38), 0 1px 0 hsla(260, 60%, 90%, .18)
+  --color-green: #1ED760
 }
 
 .badges,
@@ -104,39 +96,18 @@ img {
   animation: 1s ease-in forwards fadeIn
 }
 
+.about-section a {
+  color: #00aff4;
+  text-decoration: none
+}
+
+.about-section a:hover {
+  text-decoration: underline
+}
+
 body {
   padding: 0;
   color: var(--text-color)
-}
-
-/* Translucency. The card was an opaque gradient, so the glass had nothing to
-   see through: the backdrop every element sampled was the card's own flat
-   violet, which measured mean 0.31 against 0.14 for the page - the glass read
-   as a solid block. These surfaces now composite over the backdrop instead.
-
-/* hsla() rather than hsl(... / a): the alpha-modern syntax inside a var-composed
-   gradient silently dropped the whole declaration in testing.
-
-   NO backdrop-filter here. It makes .profile a backdrop root, so every nested
-   glass surface samples only what is inside the card and never the page.
-   Measured: a glass layer inside a parent with backdrop-filter came back 96.5%
-   flat colour, while the same layer inside a parent without one showed 23% cyan
-   and 50% pink of the page pattern behind it. The card stays translucent, which
-   is what lets the page through; the blur was both redundant and blocking. */
-.profile {
-  background: linear-gradient(to bottom,
-    hsla(var(--primary-h-top), var(--primary-s-top), var(--primary-l-top), .78),
-    hsla(var(--primary-h-bottom), var(--primary-s-bottom), var(--primary-l-bottom), .86))
-}
-
-/* The card was .42-.55 alpha here, which is opaque enough that the glass has
-   nothing to show: measured interior std identical to no effect at all, because
-   blurring flat violet changes nothing. .24-.32 lets the page read through the
-   panes while the text still has a dark surface under it. */
-.card {
-  background: linear-gradient(to bottom,
-    hsla(var(--primary-h-top), var(--primary-s-top), var(--primary-l-top), .24),
-    hsla(var(--primary-h-bottom), var(--primary-s-bottom), var(--primary-l-bottom), .32))
 }
 
 .box-color {
@@ -164,12 +135,7 @@ body {
   background-image: url("../public/bg.webp");
   background-repeat: no-repeat;
   z-index: -1;
-  /* blur(1px), not the original 5px. The page background is the only backdrop
-     any glass on this card can refract, and blurring it to 5px leaves no
-     high-frequency content, so the glass measured byte-identical to no effect
-     at all. 1px keeps the artwork soft without destroying the detail the panes
-     need. The 55% black scrim still does the darkening. */
-  filter: blur(1px);
+  filter: blur(5px);
   background-color: rgba(0, 0, 0, .55);
   background-blend-mode: darken;
   background-size: cover;
@@ -556,9 +522,9 @@ a:hover.tooltip::after {
 }
 
 .roles-body .rol {
-  background: var(--glass-tint);
-  box-shadow: var(--glass-edge);
-  border-radius: 11px;
+  background: linear-gradient(to bottom, hsl(var(--primary-h-top), var(--primary-s-top), var(--primary-l-top)), hsl(var(--primary-h-bottom), var(--primary-s-bottom), var(--primary-l-bottom)));
+  --primary-l-top: 24%;
+  --primary-l-bottom: 24%;
   display: flex;
   -webkit-box-align: center;
   -ms-flex-align: center;
@@ -597,10 +563,7 @@ a:hover.tooltip::after {
   -webkit-box-align: center;
   -ms-flex-align: center;
   align-items: center;
-  text-decoration: none;
-  border-radius: 12px;
-  background: var(--glass-tint);
-  box-shadow: var(--glass-edge), var(--glass-shadow)
+  text-decoration: none
 }
 
 .platform-username {
@@ -613,10 +576,8 @@ a:hover.tooltip::after {
   flex-grow: 1
 }
 
-.platform:hover {
-  text-decoration: none;
-  background: hsla(260, 45%, 72%, .2);
-  box-shadow: var(--glass-edge), 0 8px 26px rgba(0, 0, 0, .46)
+.platform::hover {
+  text-decoration: none
 }
 
 .platform-icon {
@@ -763,12 +724,10 @@ a:hover.tooltip::after {
   padding: 8px 12px;
   margin-top: 10px;
   margin-left: auto;
-  border-radius: 14px;
+  border-radius: 5px;
   gap: 10px;
   flex-wrap: wrap;
   max-width: 320px;
-  background: var(--glass-tint);
-  box-shadow: var(--glass-edge), var(--glass-shadow)
 }
 
 .music-cover {
@@ -779,8 +738,7 @@ a:hover.tooltip::after {
   background-color: #333;
   background-size: cover;
   background-position: center;
-  border: 1px solid hsla(260, 60%, 88%, .5);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, .35)
+  border: 2px solid var(--text-color);
 }
 
 .music-cover.playing {
@@ -811,7 +769,7 @@ a:hover.tooltip::after {
 
 .music-artist {
   font-size: 9px;
-  color: var(--color-muted);
+  color: #666;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -831,7 +789,7 @@ a:hover.tooltip::after {
 }
 
 .music-controls i:hover {
-  color: #9D6BFF;
+  color: #00aff4;
 }
 
 .music-controls #music-play {
@@ -847,12 +805,12 @@ a:hover.tooltip::after {
 }
 
 .music-controls #music-repeat-one:hover {
-  color: #9D6BFF;
+  color: #00aff4;
   transform: scale(1.1);
 }
 
 .music-controls #music-repeat-one.active {
-  color: #9D6BFF;
+  color: #00aff4;
 }
 
 .music-controls #music-repeat-one.active::after {
@@ -865,7 +823,7 @@ a:hover.tooltip::after {
   font-style: normal;
   font-family: var(--font, sans-serif);
   line-height: 1;
-  color: #9D6BFF;
+  color: #00aff4;
 }
 
 .music-controls #music-playlist-toggle {
@@ -876,11 +834,11 @@ a:hover.tooltip::after {
 }
 
 .music-controls #music-playlist-toggle:hover {
-  color: #9D6BFF;
+  color: #00aff4;
 }
 
 .music-controls #music-playlist-toggle.active {
-  color: #9D6BFF;
+  color: #00aff4;
 }
 
 .music-progress {
@@ -902,7 +860,7 @@ a:hover.tooltip::after {
 .music-progress-fill {
   height: 100%;
   width: 0;
-  background: linear-gradient(90deg, #9D6BFF, #F43F5E);
+  background: linear-gradient(90deg, #00aff4, #1db954);
   border-radius: 10px;
   transition: width 0.1s linear;
 }
@@ -941,7 +899,7 @@ a:hover.tooltip::after {
   appearance: none;
   width: 8px;
   height: 8px;
-  background: #9D6BFF;
+  background: #00aff4;
   border-radius: 50%;
   cursor: pointer;
 }
@@ -949,7 +907,7 @@ a:hover.tooltip::after {
 .music-volume input[type="range"]::-moz-range-thumb {
   width: 8px;
   height: 8px;
-  background: #9D6BFF;
+  background: #00aff4;
   border-radius: 50%;
   cursor: pointer;
   border: none;
@@ -962,12 +920,14 @@ a:hover.tooltip::after {
   z-index: 1000;
   width: 300px;
   max-width: calc(100vw - 40px);
-  border-radius: 18px;
+  border-radius: 12px;
   background: linear-gradient(180deg,
-    hsla(260, 42%, 22%, .62),
-    hsla(260, 46%, 12%, .68));
-  box-shadow: var(--glass-edge), 0 10px 34px rgba(0, 0, 0, .48),
-              0 0 0 1px hsla(260, 60%, 80%, .12);
+    hsla(206, 60%, 94%, 0.85),
+    hsla(212, 60%, 82%, 0.85));
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35),
+              0 0 0 1px rgba(255, 255, 255, 0.3) inset;
   overflow: hidden;
   max-height: 0;
   opacity: 0;
@@ -1013,11 +973,11 @@ a:hover.tooltip::after {
 }
 
 .music-playlist-item:hover {
-  background-color: hsla(260, 60%, 62%, .16);
+  background-color: rgba(0, 175, 244, 0.18);
 }
 
 .music-playlist-item.active {
-  background-color: hsla(260, 60%, 62%, .3);
+  background-color: rgba(0, 175, 244, 0.32);
 }
 
 .music-playlist-cover {
@@ -1041,7 +1001,7 @@ a:hover.tooltip::after {
 .music-playlist-name {
   font-size: 12px;
   font-weight: 600;
-  color: #E2E8F0;
+  color: #0d1b2a;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1049,7 +1009,7 @@ a:hover.tooltip::after {
 
 .music-playlist-artist {
   font-size: 10px;
-  color: #A8B3C4;
+  color: #415a77;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1057,7 +1017,7 @@ a:hover.tooltip::after {
 
 .music-playlist-duration {
   font-size: 10px;
-  color: #A8B3C4;
+  color: #415a77;
   font-variant-numeric: tabular-nums;
   font-weight: 500;
 }
@@ -1095,394 +1055,5 @@ a:hover.tooltip::after {
   .name-box .username {
     animation: none;
     text-shadow: none
-  }
-}
-
-/* ---------------------------------------------------------------- glass ui */
-
-/* No .lg-canvas. A fixed full-viewport WebGL pane sat at z-index 5, above the
-   card at z-index 1, and erased every glyph inside the glass regions: measured
-   0 ink / 0 glyph edges on the live site against 80 and 198 with it off. It is
-   not fixable by moving z-index, because one atomic layer cannot be behind an
-   element's text and above that element's own background. */
-
-#glass-controls {
-  position: fixed;
-  top: 16px;
-  right: 16px;
-  z-index: 1001;
-  font-family: "Chakra Petch", sans-serif
-}
-
-.lg-panel {
-  width: 268px;
-  border-radius: 16px;
-  border: 1px solid hsla(0, 0%, 100%, .1);
-  background: hsla(250, 12%, 8%, .82);
-  -webkit-backdrop-filter: blur(24px) saturate(150%);
-  backdrop-filter: blur(24px) saturate(150%);
-  box-shadow: 0 18px 48px rgba(0, 0, 0, .55);
-  overflow: hidden
-}
-
-.lg-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 14px 8px
-}
-
-.lg-title {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  color: var(--text-color)
-}
-
-.lg-x {
-  width: 22px;
-  height: 22px;
-  display: grid;
-  place-items: center;
-  font-size: 16px;
-  line-height: 1;
-  cursor: pointer;
-  color: var(--color-muted);
-  background: hsla(0, 0%, 100%, .07);
-  border: 0;
-  border-radius: 50%
-}
-
-.lg-x:hover { color: var(--text-color); background: hsla(0, 0%, 100%, .14) }
-
-.lg-scroll {
-  max-height: min(70vh, 560px);
-  overflow-y: auto;
-  padding: 0 14px 10px
-}
-
-.lg-sec + .lg-sec {
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px solid hsla(0, 0%, 100%, .07)
-}
-
-.lg-sec-title {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: .12em;
-  text-transform: uppercase;
-  color: var(--color-muted);
-  margin-bottom: 8px
-}
-
-.lg-field,
-.lg-color {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 7px;
-  font-size: 11px;
-  color: var(--color-muted)
-}
-
-.lg-field > span,
-.lg-color > span {
-  flex: 1;
-  min-width: 0
-}
-
-.lg-field input[type="range"] { flex: 1.2; min-width: 0 }
-.lg-field output { min-width: 38px; text-align: right; color: var(--text-color) }
-
-.lg-color input[type="color"] {
-  width: 34px;
-  height: 20px;
-  padding: 0;
-  cursor: pointer;
-  background: none;
-  border: 1px solid hsla(0, 0%, 100%, .18);
-  border-radius: 5px
-}
-
-.lg-check { display: flex; align-items: center; gap: 8px; cursor: pointer }
-.lg-master { margin-bottom: 10px; font-size: 11px; color: var(--text-color) }
-
-.lg-foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 9px 14px;
-  border-top: 1px solid hsla(0, 0%, 100%, .08)
-}
-
-.lg-btn {
-  font: inherit;
-  font-size: 10px;
-  letter-spacing: .06em;
-  text-transform: uppercase;
-  cursor: pointer;
-  padding: 5px 11px;
-  color: var(--text-color);
-  background: hsla(0, 0%, 100%, .08);
-  border: 0;
-  border-radius: 7px
-}
-
-.lg-btn:hover { background: hsla(0, 0%, 100%, .16) }
-
-.lg-warn {
-  display: block;
-  margin-top: 8px;
-  font-size: 10px;
-  color: #FFB4A2
-}
-
-/* Slider track and thumb, matching the reference panel's fill. */
-.lg-panel input[type="range"] {
-  -webkit-appearance: none;
-  appearance: none;
-  height: 3px;
-  border-radius: 3px;
-  background: hsla(0, 0%, 100%, .16);
-  outline: 0
-}
-
-.lg-panel input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 11px;
-  height: 11px;
-  cursor: pointer;
-  border: 0;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, .5)
-}
-
-.lg-panel input[type="range"]::-moz-range-thumb {
-  width: 11px;
-  height: 11px;
-  cursor: pointer;
-  border: 0;
-  border-radius: 50%;
-  background: #fff
-}
-
-.lg-toggle {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  width: 38px;
-  height: 38px;
-  justify-content: center;
-  padding: 0;
-  cursor: pointer;
-  color: var(--text-color);
-  border: 1px solid hsla(260, 60%, 88%, .22);
-  border-radius: 50%;
-  background: var(--glass-tint);
-  box-shadow: var(--glass-edge), var(--glass-shadow);
-  transition: transform .2s ease
-}
-
-.lg-toggle:hover {
-  transform: scale(1.06)
-}
-
-.lg-dot {
-  position: absolute;
-  right: 3px;
-  bottom: 3px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--color-muted)
-}
-
-.lg-dot[data-mode="glass"] { background: var(--color-violet) }
-.lg-dot[data-mode="off"] { background: #64748B }
-
-.lg-panel {
-  margin-top: 8px;
-  width: 208px;
-  padding: 12px;
-  border-radius: 16px;
-  border: 1px solid hsla(260, 60%, 88%, .18);
-  background: hsla(260, 42%, 14%, .72);
-  -webkit-backdrop-filter: blur(22px) saturate(170%);
-  backdrop-filter: blur(22px) saturate(170%);
-  box-shadow: var(--glass-edge), 0 12px 34px rgba(0, 0, 0, .5)
-}
-
-.lg-panel[hidden] { display: none }
-
-.lg-row {
-  display: flex;
-  gap: 4px;
-  margin-bottom: 12px
-}
-
-.lg-mode {
-  flex: 1;
-  padding: 6px 0;
-  font: inherit;
-  font-size: 12px;
-  cursor: pointer;
-  color: var(--color-muted);
-  background: transparent;
-  border: 1px solid hsla(260, 60%, 88%, .16);
-  border-radius: 9px;
-  transition: background .18s ease, color .18s ease
-}
-
-.lg-mode[aria-checked="true"] {
-  color: #0B0716;
-  background: var(--color-violet);
-  border-color: transparent
-}
-
-.lg-slider,
-.lg-check {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 10px;
-  font-size: 12px;
-  color: var(--color-muted)
-}
-
-.lg-slider input { flex: 1 }
-.lg-slider output { min-width: 22px; text-align: right; color: var(--text-color) }
-.lg-check { cursor: pointer }
-
-.lg-note {
-  margin: 6px 0 0;
-  font-size: 11px;
-  color: #8B87A8
-}
-
-input[type="range"] {
-  accent-color: var(--color-violet)
-}
-
-.lg-ripple {
-  position: absolute;
-  border-radius: 50%;
-  pointer-events: none;
-  background: radial-gradient(circle, hsla(260, 90%, 84%, .5), transparent 68%);
-  transform: scale(0);
-  animation: lgRipple .55s ease-out
-}
-
-/* Theme. The refract pass reads the same numbers through u_tint, so a theme
-   has to exist in both places or the two modes drift apart. */
-[data-lgtheme="abyss"] {
-  --glass-tint: hsla(216, 45%, 62%, .14);
-  --glass-edge: inset 0 1px 0 hsla(216, 70%, 88%, .32);
-  --color-violet: #6FA8FF;
-}
-
-[data-lgtheme="crimson"] {
-  --glass-tint: hsla(350, 55%, 62%, .14);
-  --glass-edge: inset 0 1px 0 hsla(350, 70%, 90%, .32);
-  --color-violet: #FF6B85;
-}
-
-[data-lgtheme="emerald"] {
-  --glass-tint: hsla(160, 45%, 55%, .14);
-  --glass-edge: inset 0 1px 0 hsla(160, 65%, 86%, .32);
-  --color-violet: #4ADE9E;
-}
-
-[data-lgtheme="frost"] {
-  --glass-tint: hsla(205, 40%, 78%, .16);
-  --glass-edge: inset 0 1px 0 hsla(205, 70%, 96%, .38);
-  --color-violet: #A8CEF0;
-}
-
-/* ------------------------------------------------------------- glass layers */
-
-/* Two pseudo-element planes per glass host. Everything here is painted BELOW
-   the host's text, which is the whole point: measured on a three-way probe,
-   backdrop-filter on a layer above the text gave 0 ink / 0 glyph edges (text
-   destroyed), while a layer below it left the text pixel-identical at 144
-   glyph edges, same as no filter at all.
-
-   position:relative + z-index:0 makes the host a stacking context, which is
-   what lets z-index:-1 on the pseudo-element resolve against the host instead
-   of escaping behind the card.
-
-   isolation:isolate is deliberately NOT used here. It also creates a stacking
-   context, but it creates a BACKDROP ROOT at the same time, which starves the
-   ::after of anything to sample: with it, a forced blur(30px) on the plane
-   changed nothing at all. position/z-index gives the stacking context without
-   the backdrop root. The hosts' own backdrop-filter declarations were removed
-   for the same reason - each host was its own root too. */
-/* The tint sits on the host's own background: the element's background is
-   painted on top of its already-filtered backdrop, which is exactly what a
-   tint should do. A ::before carrying it was tried and covered the text,
-   because a positioned pseudo-element paints after inline content. */
-[data-lg="glass"] [data-glass] {
-  position: relative;
-  z-index: 0;
-  border-radius: var(--lg-radius, 5px);
-  background: var(--lg-tint-plain, rgba(255, 255, 255, .06));
-  /* The filter goes on the HOST, not on a child. Measured: backdrop-filter on
-     the element itself leaves its own text pixel-identical (144 glyph edges,
-     same as no filter), while the same filter on a child painted over the text
-     took it to 0 ink / 0 edges.
-
-     A z-index:-1 ::after carrying the filter was tried and removed: it renders
-     the plane but composited nothing at all - a forced blur(40px) changed zero
-     pixels. Negative-z pseudo-elements do not get a backdrop in Chrome.
-
-     Plain blur by default. The SVG refraction is scoped to .lg-hero because
-     running it on all eight surfaces measured 27fps against 95 with the effect
-     off; the panel reports the number so the cost is never silent. */
-  backdrop-filter: blur(var(--lg-blur-plain, 14px)) saturate(160%);
-  -webkit-backdrop-filter: blur(var(--lg-blur-plain, 14px)) saturate(160%);
-  box-shadow: var(--lg-inner-shadow, none), var(--lg-outer-shadow, none)
-}
-
-[data-lg="glass"] .lg-hero {
-  backdrop-filter: var(--lg-filter, blur(14px) saturate(160%));
-  -webkit-backdrop-filter: var(--lg-filter, blur(14px) saturate(160%))
-}
-
-/* The rim light is now the 1px inner highlight from --lg-inner-shadow's first
-   stop plus the specular map inside the filter graph. A separate ::before with
-   a border was removed: it had to be re-specified per theme and the SVG
-   specular map already does the job, with the bonus that it follows the bevel. */
-
-@keyframes lgRipple {
-  to {
-    transform: scale(1);
-    opacity: 0
-  }
-}
-
-/* In off mode the surfaces go plain: no tint, no backdrop work. The pseudo-
-   element planes are gone too, because the mode selector never matches. */
-[data-lg="off"] .music-player,
-[data-lg="off"] .music-playlist,
-[data-lg="off"] .roles-body .rol,
-[data-lg="off"] .platform {
-  background: transparent;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  box-shadow: none
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .lg-toggle,
-  .lg-mode {
-    transition: none
-  }
-
-  .lg-ripple {
-    animation: none;
-    opacity: 0
   }
 }
