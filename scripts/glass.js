@@ -2,12 +2,13 @@
 // No dependencies: the whole effect is ~12KB of JS against what a Three.js
 // build would cost.
 //
-// Four modes:
-//   glass4   - 4 rings of CSS backdrop-filter
-//   glass16  - 16 rings, the waldbach technique. Heavy; the panel reports FPS.
-//   refract  - one WebGL pass with real lensing at the rim
-//   off      - no effect
+// Three modes:
+//   glass   - 4 CSS backdrop-filter rings on the bezel
+//   refract - one WebGL pass: lensing across the whole pane, not just the rim
+//   off     - no effect
 //
+// The 16-ring mode and the CSS rain layer were removed at the owner's request:
+// both were measurably broken and neither delivered what it claimed.
 
 
 const STORE = 'lg-cfg';
