@@ -1231,15 +1231,50 @@ input[type="range"] {
   pointer-events: none
 }
 
-[data-lg="glass16"] .lg-ring {
-  animation: lgRingShift 6s ease-in-out infinite alternate
+/* CSS rain for the two CSS modes. Rain was a shader uniform, so it silently
+   did nothing in glass4/glass16 while still showing as enabled in the panel.
+   Measured identical with it on and off, which is how that gap surfaced. */
+[data-lg="glass4"] [data-glass],
+[data-lg="glass16"] [data-glass] {
+  position: relative
 }
 
-@keyframes lgRingShift {
+[data-lg="glass4"] [data-glass]::after,
+[data-lg="glass16"] [data-glass]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: var(--lg-rain-alpha, .5);
+  background-image:
+    repeating-linear-gradient(102deg,
+      transparent 0 7px,
+      hsla(210, 90%, 88%, .5) 7px 8px,
+      transparent 8px 17px),
+    repeating-linear-gradient(84deg,
+      transparent 0 11px,
+      hsla(210, 90%, 80%, .34) 11px 12px,
+      transparent 12px 29px);
+  background-size: 60px 200px, 90px 260px;
+  animation: lgRainFall 1.5s linear infinite
+}
+
+@keyframes lgRainFall {
   to {
-    filter: hue-rotate(24deg)
+    background-position: -18px 200px, 26px 260px
   }
 }
+
+[data-lganim="off"] [data-glass]::after {
+  animation: none;
+  background-position: -9px 100px, 13px 130px
+}
+
+/* No hue-rotate animation here. The violet theme sits at 260deg and a 24deg
+   shift lands it at 284deg, which is magenta: it fought the theme and was the
+   colour the user saw as a bug. If the rings need motion it has to come from
+   something other than hue. */
 
 .lg-field {
   display: flex;
