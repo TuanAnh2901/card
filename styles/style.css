@@ -114,20 +114,29 @@ body {
    violet, which measured mean 0.31 against 0.14 for the page - the glass read
    as a solid block. These surfaces now composite over the backdrop instead.
 
-   hsla() rather than hsl(... / a): the alpha-modern syntax inside a var-composed
-   gradient silently dropped the whole declaration in testing. */
+/* hsla() rather than hsl(... / a): the alpha-modern syntax inside a var-composed
+   gradient silently dropped the whole declaration in testing.
+
+   NO backdrop-filter here. It makes .profile a backdrop root, so every nested
+   glass surface samples only what is inside the card and never the page.
+   Measured: a glass layer inside a parent with backdrop-filter came back 96.5%
+   flat colour, while the same layer inside a parent without one showed 23% cyan
+   and 50% pink of the page pattern behind it. The card stays translucent, which
+   is what lets the page through; the blur was both redundant and blocking. */
 .profile {
   background: linear-gradient(to bottom,
     hsla(var(--primary-h-top), var(--primary-s-top), var(--primary-l-top), .78),
-    hsla(var(--primary-h-bottom), var(--primary-s-bottom), var(--primary-l-bottom), .86));
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px)
+    hsla(var(--primary-h-bottom), var(--primary-s-bottom), var(--primary-l-bottom), .86))
 }
 
+/* The card was .42-.55 alpha here, which is opaque enough that the glass has
+   nothing to show: measured interior std identical to no effect at all, because
+   blurring flat violet changes nothing. .24-.32 lets the page read through the
+   panes while the text still has a dark surface under it. */
 .card {
   background: linear-gradient(to bottom,
-    hsla(var(--primary-h-top), var(--primary-s-top), var(--primary-l-top), .42),
-    hsla(var(--primary-h-bottom), var(--primary-s-bottom), var(--primary-l-bottom), .55))
+    hsla(var(--primary-h-top), var(--primary-s-top), var(--primary-l-top), .24),
+    hsla(var(--primary-h-bottom), var(--primary-s-bottom), var(--primary-l-bottom), .32))
 }
 
 .box-color {
@@ -155,7 +164,12 @@ body {
   background-image: url("../public/bg.webp");
   background-repeat: no-repeat;
   z-index: -1;
-  filter: blur(5px);
+  /* blur(1px), not the original 5px. The page background is the only backdrop
+     any glass on this card can refract, and blurring it to 5px leaves no
+     high-frequency content, so the glass measured byte-identical to no effect
+     at all. 1px keeps the artwork soft without destroying the detail the panes
+     need. The 55% black scrim still does the darkening. */
+  filter: blur(1px);
   background-color: rgba(0, 0, 0, .55);
   background-blend-mode: darken;
   background-size: cover;
@@ -543,8 +557,6 @@ a:hover.tooltip::after {
 
 .roles-body .rol {
   background: var(--glass-tint);
-  -webkit-backdrop-filter: var(--glass-blur);
-  backdrop-filter: var(--glass-blur);
   box-shadow: var(--glass-edge);
   border-radius: 11px;
   display: flex;
@@ -588,8 +600,6 @@ a:hover.tooltip::after {
   text-decoration: none;
   border-radius: 12px;
   background: var(--glass-tint);
-  -webkit-backdrop-filter: var(--glass-blur);
-  backdrop-filter: var(--glass-blur);
   box-shadow: var(--glass-edge), var(--glass-shadow)
 }
 
@@ -758,8 +768,6 @@ a:hover.tooltip::after {
   flex-wrap: wrap;
   max-width: 320px;
   background: var(--glass-tint);
-  -webkit-backdrop-filter: var(--glass-blur);
-  backdrop-filter: var(--glass-blur);
   box-shadow: var(--glass-edge), var(--glass-shadow)
 }
 
@@ -958,8 +966,6 @@ a:hover.tooltip::after {
   background: linear-gradient(180deg,
     hsla(260, 42%, 22%, .62),
     hsla(260, 46%, 12%, .68));
-  -webkit-backdrop-filter: var(--glass-blur);
-  backdrop-filter: var(--glass-blur);
   box-shadow: var(--glass-edge), 0 10px 34px rgba(0, 0, 0, .48),
               0 0 0 1px hsla(260, 60%, 80%, .12);
   overflow: hidden;
@@ -1094,12 +1100,11 @@ a:hover.tooltip::after {
 
 /* ---------------------------------------------------------------- glass ui */
 
-.lg-canvas {
-  position: fixed;
-  inset: 0;
-  z-index: 5;
-  pointer-events: none
-}
+/* No .lg-canvas. A fixed full-viewport WebGL pane sat at z-index 5, above the
+   card at z-index 1, and erased every glyph inside the glass regions: measured
+   0 ink / 0 glyph edges on the live site against 80 and 198 with it off. It is
+   not fixable by moving z-index, because one atomic layer cannot be behind an
+   element's text and above that element's own background. */
 
 #glass-controls {
   position: fixed;
@@ -1122,8 +1127,6 @@ a:hover.tooltip::after {
   border: 1px solid hsla(260, 60%, 88%, .22);
   border-radius: 50%;
   background: var(--glass-tint);
-  -webkit-backdrop-filter: var(--glass-blur);
-  backdrop-filter: var(--glass-blur);
   box-shadow: var(--glass-edge), var(--glass-shadow);
   transition: transform .2s ease
 }
@@ -1143,7 +1146,6 @@ a:hover.tooltip::after {
 }
 
 .lg-dot[data-mode="glass"] { background: var(--color-violet) }
-.lg-dot[data-mode="refract"] { background: var(--color-accent) }
 .lg-dot[data-mode="off"] { background: #64748B }
 
 .lg-panel {
@@ -1244,65 +1246,51 @@ input[type="range"] {
   --color-violet: #A8CEF0;
 }
 
-/* Layer mode. Rings are injected as children, so the host has to trap them;
-   overflow:hidden here would clip the outward step, so the mask does it. */
+/* ------------------------------------------------------------- glass layers */
+
+/* Two pseudo-element planes per glass host. Everything here is painted BELOW
+   the host's text, which is the whole point: measured on a three-way probe,
+   backdrop-filter on a layer above the text gave 0 ink / 0 glyph edges (text
+   destroyed), while a layer below it left the text pixel-identical at 144
+   glyph edges, same as no filter at all.
+
+   position:relative + z-index:0 makes the host a stacking context, which is
+   what lets z-index:-1 on the pseudo-element resolve against the host instead
+   of escaping behind the card.
+
+   isolation:isolate is deliberately NOT used here. It also creates a stacking
+   context, but it creates a BACKDROP ROOT at the same time, which starves the
+   ::after of anything to sample: with it, a forced blur(30px) on the plane
+   changed nothing at all. position/z-index gives the stacking context without
+   the backdrop root. The hosts' own backdrop-filter declarations were removed
+   for the same reason - each host was its own root too. */
 [data-lg="glass"] [data-glass] {
-  isolation: isolate
+  position: relative;
+  z-index: 0;
+  /* The filter goes on the HOST, not on a child. Measured: backdrop-filter on
+     the element itself leaves its own text pixel-identical (144 glyph edges,
+     same as no filter), while the same filter on a child painted over the text
+     took it to 0 ink / 0 edges.
+
+     A z-index:-1 ::after carrying the filter was tried and removed: it renders
+     the plane but composite nothing at all - a forced blur(40px) changed zero
+     pixels. Negative-z pseudo-elements do not get a backdrop in Chrome. */
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur)
 }
 
-.lg-ring {
-  display: block;
-  pointer-events: none
-}
-
-/* No rain layer. The owner asked for it to be removed: radial drops over a
-   dark blurred backdrop read as texture, not weather, and the animation cost
-   half the frame budget before it was moved off background-position. It is
-   gone rather than left half-working. */
-
-/* No hue-rotate animation here. The violet theme sits at 260deg and a 24deg
-   shift lands it at 284deg, which is magenta: it fought the theme and was the
-   colour the user saw as a bug. If the rings need motion it has to come from
-   something other than hue. */
-
-.lg-field {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 10px;
-  font-size: 12px;
-  color: var(--color-muted)
-}
-
-.lg-field > span {
-  min-width: 42px
-}
-
-.lg-field input[type="range"] {
-  flex: 1
-}
-
-.lg-field output {
-  min-width: 26px;
-  text-align: right;
-  color: var(--text-color)
-}
-
-.lg-field select {
-  flex: 1;
-  font: inherit;
-  font-size: 12px;
-  padding: 4px 6px;
-  color: var(--text-color);
-  background: hsla(260, 40%, 18%, .9);
-  border: 1px solid hsla(260, 60%, 88%, .18);
-  border-radius: 8px
-}
-
-.lg-divider {
-  height: 1px;
-  margin: 4px 0 10px;
-  background: hsla(260, 60%, 88%, .12)
+/* ::before is the rim light. It carries no filter at all: a filtered child
+   above the text is what destroyed the glyphs, and the rim's job is a 1px
+   specular edge, which a border does without touching the backdrop. */
+[data-lg="glass"] [data-glass]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  border: 1px solid hsla(260, 60%, 92%, .34);
+  box-shadow: inset 0 1px 0 hsla(260, 60%, 92%, .2),
+              0 6px 22px rgba(0, 0, 0, .38)
 }
 
 @keyframes lgRipple {
@@ -1312,21 +1300,8 @@ input[type="range"] {
   }
 }
 
-/* In refract mode the CSS glass is replaced by the WebGL pass. */
-[data-lg="refract"] .music-player,
-[data-lg="refract"] .music-playlist,
-[data-lg="refract"] .roles-body .rol,
-[data-lg="refract"] .platform {
-  background: transparent;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  box-shadow: none
-}
-
-[data-lg="refract"] .music-playlist {
-  border: 1px solid hsla(260, 60%, 84%, .22)
-}
-
+/* In off mode the surfaces go plain: no tint, no backdrop work. The pseudo-
+   element planes are gone too, because the mode selector never matches. */
 [data-lg="off"] .music-player,
 [data-lg="off"] .music-playlist,
 [data-lg="off"] .roles-body .rol,

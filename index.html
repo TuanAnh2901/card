@@ -300,6 +300,16 @@
 		</div>
 		<div class="music-playlist" id="music-playlist" data-glass></div>
 		<div id="glass-controls"></div>
+		<svg id="lg-defs" aria-hidden="true" focusable="false" width="0" height="0" style="position:absolute">
+  <defs>
+    <filter id="lgRefract" x="0%" y="0%" width="100%" height="100%" color-interpolation-filters="sRGB">
+      <feImage id="lgDisp" x="0" y="0" width="100%" height="100%" preserveAspectRatio="none" result="map" />
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blurred" />
+      <feDisplacementMap in="blurred" in2="map" scale="26" xChannelSelector="R" yChannelSelector="G" />
+    </filter>
+  </defs>
+</svg>
+
 		<script defer src="./scripts/sub.js"></script>
 		<script src="./scripts/music.js"></script>
 		<script defer src="./scripts/glass.js"></script>
