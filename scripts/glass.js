@@ -313,6 +313,13 @@ function applyLayers() {
     // least half the surface. A fixed 2px band puts a 31px frame on an 82px
     // tall bar and leaves no glass to read through.
     const box = el.getBoundingClientRect();
+
+    // Chips are too small to carry a bezel. N rings on a 22px tall role chip
+    // wash the label out entirely, and N backdrop-filters on a 75px element is
+    // the most expensive thing in the panel for the least visible gain. Those
+    // keep the element's own single filter and nothing more.
+    if (box.height < 30) return;
+
     const band = Math.max(0.4, (Math.min(box.width, box.height) * 0.25) / n);
 
     for (let i = 0; i < n; i++) {

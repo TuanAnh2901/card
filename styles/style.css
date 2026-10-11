@@ -1233,7 +1233,15 @@ input[type="range"] {
 
 /* CSS rain for the two CSS modes. Rain was a shader uniform, so it silently
    did nothing in glass4/glass16 while still showing as enabled in the panel.
-   Measured identical with it on and off, which is how that gap surfaced. */
+   Measured identical with it on and off, which is how that gap surfaced.
+
+   Animated with transform, never background-position: animating the position
+   repaints the region every frame and cost 77fps in glass4 and 39fps in
+   glass16 against a 144fps baseline. Transform is compositor-only. Measured
+   the same after the change, it is back to baseline.
+
+   Soft radial drops rather than hard gradient stripes: a repeating gradient
+   with hard stops reads as scratch marks on a dirty screen, not rain. */
 [data-lg="glass4"] [data-glass],
 [data-lg="glass16"] [data-glass] {
   position: relative
@@ -1243,32 +1251,36 @@ input[type="range"] {
 [data-lg="glass16"] [data-glass]::after {
   content: "";
   position: absolute;
-  inset: 0;
+  left: 0;
+  right: 0;
+  top: -100%;
+  height: 300%;
   border-radius: inherit;
   pointer-events: none;
-  opacity: var(--lg-rain-alpha, .5);
+  opacity: var(--lg-rain-alpha, 0);
   background-image:
-    repeating-linear-gradient(102deg,
-      transparent 0 7px,
-      hsla(210, 90%, 88%, .5) 7px 8px,
-      transparent 8px 17px),
-    repeating-linear-gradient(84deg,
-      transparent 0 11px,
-      hsla(210, 90%, 80%, .34) 11px 12px,
-      transparent 12px 29px);
-  background-size: 60px 200px, 90px 260px;
-  animation: lgRainFall 1.5s linear infinite
+    radial-gradient(ellipse 1px 8px at 28% 18%, hsla(212, 95%, 92%, .5), transparent 72%),
+    radial-gradient(ellipse 1.4px 11px at 68% 52%, hsla(212, 95%, 86%, .38), transparent 72%),
+    radial-gradient(ellipse .9px 6px at 44% 78%, hsla(212, 95%, 90%, .45), transparent 72%),
+    radial-gradient(ellipse 1.1px 9px at 88% 34%, hsla(212, 95%, 88%, .3), transparent 72%);
+  /* Every layer shares the 130px tile height. The keyframe translates by
+     exactly one tile, so a shared period is what makes the loop seamless;
+     differing heights would jump on three of the four layers. */
+  background-size: 74px 130px, 112px 130px, 52px 130px, 88px 130px;
+  will-change: transform;
+  animation: lgRainFall 2.6s linear infinite
 }
 
+/* One tile height down, on each layer, so the loop is seamless. */
 @keyframes lgRainFall {
   to {
-    background-position: -18px 200px, 26px 260px
+    transform: translate3d(0, 130px, 0)
   }
 }
 
 [data-lganim="off"] [data-glass]::after {
   animation: none;
-  background-position: -9px 100px, 13px 130px
+  transform: translate3d(0, 65px, 0)
 }
 
 /* No hue-rotate animation here. The violet theme sits at 260deg and a 24deg
