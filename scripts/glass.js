@@ -23,7 +23,7 @@ const DEFAULTS = {
   // refraction
   thickness: 80, bezel: 60, ior: 3.0, scaleRatio: 1.0,
   // appearance
-  blur: 0.3, specOpacity: 0.5, specSat: 4,
+  blur: 0.3, specOpacity: 0.5,
   // inner shadow
   innerColor: '#000000', innerBlur: 20, innerSpread: -5,
   // glass tint
@@ -194,20 +194,20 @@ function applyFilter() {
   // Rebuild the graph. Chromium caches by filter id, so the feImage hrefs must
   // change for a re-run to be visible.
   //
-  // specOpacity is expected to be tiny on a dark backdrop. The specular map is
-  // white across the whole pane (its mask only excludes outside the rounded
-  // rect), so at the reference demo's 0.5 this card measured interior mean 240
-  // against 53 with the effect off: a whitewash, not a light catch. It is
-  // scaled here and the slider is documented accordingly.
+  // There is deliberately no feColorMatrix saturate here. It was labelled
+  // "Specular Saturation" but the specular layer is achromatic grey, so
+  // saturating it is the identity - the primitive had no correct target. Applied
+  // to the whole scene instead, it was the dominant cause of a milky wash:
+  // measured monotonic in the slider at 72 / 86 / 103 / 113 for 1 / 3 / 5.5 / 8,
+  // against 62 with the effect off. Dropped along with the control.
   const specOp = Math.min(0.12, state.specOpacity * 0.2);
   fe.innerHTML = `
     <feGaussianBlur in="SourceGraphic" stdDeviation="${state.blur}" result="blurred" />
     <feImage href="${mapCache.disp}" x="0" y="0" width="${w}" height="${h}" preserveAspectRatio="none" result="disp" />
     <feDisplacementMap in="blurred" in2="disp" scale="${(state.scaleRatio * 26).toFixed(2)}"
       xChannelSelector="R" yChannelSelector="G" result="displaced" />
-    <feColorMatrix in="displaced" type="saturate" values="${state.specSat}" result="saturated" />
     <feImage href="${mapCache.spec}" x="0" y="0" width="${w}" height="${h}" preserveAspectRatio="none" result="spec" />
-    <feComposite in="saturated" in2="spec" operator="in" result="specMasked" />
+    <feComposite in="displaced" in2="spec" operator="in" result="specMasked" />
     <feComponentTransfer in="spec" result="specFaded">
       <feFuncA type="linear" slope="${specOp.toFixed(3)}" />
     </feComponentTransfer>
@@ -234,7 +234,7 @@ function applyCss() {
   root.dataset.lg = state.enabled ? 'glass' : 'off';
   // The non-hero surfaces get this. It tracks the appearance blur so the whole
   // card still reads as one material even where refraction is too expensive.
-  root.style.setProperty('--lg-blur-plain', Math.max(4, Math.round(state.blur * 40)) + 'px');
+  root.style.setProperty('--lg-blur-plain', (state.blur * 2).toFixed(2) + 'px');
 
   // The filter is only worth running when the browser can parse the url()
   // reference; fall back to a plain blur otherwise so the surfaces never go
@@ -279,7 +279,6 @@ const FIELDS = [
   { group: 'Appearance', rows: [
     ['blur', 'Blur', 0, 3, 0.05, ''],
     ['specOpacity', 'Specular Opacity', 0, 1, 0.05, ''],
-    ['specSat', 'Specular Saturation', 0, 10, 0.5, ''],
   ]},
   { group: 'Inner shadow', rows: [
     ['innerBlur', 'Blur', 0, 60, 1, 'px'],
